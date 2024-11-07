@@ -50,8 +50,5 @@ The binary confusion matrix summarizes the model’s performance:
 - **True Negative (FN)**: 45 instances where the model missed a correct match.
 - **False Negative (TN)**: None in this dataset.
 
-### 5. **Progress Tracking**
-   - The `tqdm` library is used to display a single progress bar for all images in the test folder, allowing for a clear and continuous update on benchmarking progress.
-
 ### 6. **Similarity Scores**
    - Average similarity scores for TP, FP, FN, and TN are calculated and printed. These scores provide additional insight into how similar or dissimilar the model finds each type of match or mismatch.
