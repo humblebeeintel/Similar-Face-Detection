@@ -1,5 +1,7 @@
 # Face Recognition Model
 
+![🔎](https://github.com/user-attachments/assets/69f945dc-b97e-4e60-b7f9-5c3e6f931b14)
+
 This project is a face recognition system that detects unique faces within a dataset and evaluates its accuracy using a binary confusion matrix. The system employs the FaceNet512 model for extracting facial embeddings, which are then used to measure the similarity between faces based on cosine similarity. The model also benchmarks its performance with a test set, calculating metrics like true positives, true negatives, false positives, and false negatives, while generating a confusion matrix for a visual summary.
 
 ## Key Components
