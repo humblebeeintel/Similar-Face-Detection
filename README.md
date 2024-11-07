@@ -26,6 +26,30 @@ This project is a face recognition system that detects unique faces within a dat
      - **False Negatives (FN)**: Incorrectly missed matches where a face should have matched an existing face but didn't.
    - **Visualization**: The confusion matrix is visualized as a heatmap for easy analysis and saved as `confusion_matrix_binary.png`.
 
+### Model Benchmark Summary
+
+The face recognition model was evaluated using a benchmark dataset, producing the following results:
+
+- **Accuracy**: The model achieved a benchmark accuracy of **71.25%** across **1,179 tests**.
+
+<img width="317" alt="Screenshot 2024-11-07 at 13 44 05" src="https://github.com/user-attachments/assets/0d01ceb8-cd5e-4d74-ab15-8882081f0faa">
+
+- **Average Similarity Scores**:
+  - **True Positives (TP)**: 0.74
+  - **False Positives (FP)**: 0.64
+  - **True Negatives (TN)**: 0.00
+  - **False Negatives (FN)**: No matches were recorded for FN.
+
+### Confusion Matrix
+
+![confusion_matrix_binary](https://github.com/user-attachments/assets/27785de6-c54b-4091-bfc8-83513b164814)
+
+The binary confusion matrix summarizes the model’s performance:
+- **True Positive (TP)**: 840 instances where the model correctly identified a match.
+- **False Positive (FP)**: 294 instances where the model incorrectly identified a match.
+- **True Negative (FN)**: 45 instances where the model missed a correct match.
+- **False Negative (TN)**: None in this dataset.
+
 ### 5. **Progress Tracking**
    - The `tqdm` library is used to display a single progress bar for all images in the test folder, allowing for a clear and continuous update on benchmarking progress.
 
