@@ -23,7 +23,7 @@ def create_directories():
 
 def get_face_embedding(image_path):
     """
-    Detects faces and generates embeddings using MTCNN for detection
+    Detects faces and generates embeddings using retinaface for detection
     and alignment and FaceNet512 for embedding extraction.
     """
     try:
