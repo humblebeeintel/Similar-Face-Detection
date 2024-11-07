@@ -9,6 +9,8 @@ import numpy as np
 from deepface import DeepFace
 from sklearn.metrics.pairwise import cosine_similarity
 from termcolor import colored
+from tqdm import tqdm
+
 
 # Define paths and constants
 ORIGINAL_IMAGES_PATH = "original_images"
@@ -88,20 +90,23 @@ def process_image(image_path, embeddings_data):
             save_unique_face(face_embedding, cv2.imread(image_path), unique_face_id)
             embeddings_data.append((face_embedding, f"face_{unique_face_id}"))
 
-
 def benchmark_model(test_folder, embeddings_data):
-    """Benchmarks the model by testing top-1 accuracy on a test folder and outputs a binary confusion matrix."""
+    """Benchmarks the model by testing top-1 accuracy on a test folder and outputs a binary confusion matrix
+    along with similarity and dissimilarity scores."""
     TP, TN, FP, FN = 0, 0, 0, 0
+    similarity_scores = {"TP": [], "FP": [], "FN": [], "TN": []}
     total_tests = 0
 
     ground_truth_labels = []
     predicted_labels = []
 
-    for filename in os.listdir(test_folder):
-        if filename.lower().endswith(('.jpg', '.jpeg', '.png')):
-            image_path = os.path.join(test_folder, filename)
-            print(f"Benchmarking image: {image_path}")
+    # Get list of all test images for progress tracking
+    test_images = [f for f in os.listdir(test_folder) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
 
+    # Using tqdm to wrap the image processing loop for a single progress bar
+    with tqdm(total=len(test_images), desc="Benchmarking images") as pbar:
+        for filename in test_images:
+            image_path = os.path.join(test_folder, filename)
             face_embeddings = get_face_embedding(image_path)
             match_found = False
             ground_truth_id = int(re.search(r'_(\d+)\.', filename).group(1))  # Extract ground truth ID
@@ -116,37 +121,44 @@ def benchmark_model(test_folder, embeddings_data):
                         top_match_id = int(top_match_folder.split('_')[1])
                         match_found = True
                         
-                        # Track for confusion matrix
+                        # Track for confusion matrix and similarity scores
                         if ground_truth_id == top_match_id:
                             TP += 1  # True Positive: Correct match found
+                            similarity_scores["TP"].append(top_similarity)
                             ground_truth_labels.append(1)  # Positive class
                             predicted_labels.append(1)  # Positive prediction
                         else:
                             FP += 1  # False Positive: Incorrect match found
+                            similarity_scores["FP"].append(top_similarity)
                             ground_truth_labels.append(1)
                             predicted_labels.append(0)
                         break  # Stop checking other embeddings for this image
 
             if not match_found:
                 FN += 1  # False Negative: No match found
+                similarity_scores["FN"].append(0)  # No similarity since no match was found
                 ground_truth_labels.append(1)
                 predicted_labels.append(0)
 
             total_tests += 1
+            pbar.update(1)  # Update the progress bar for each processed image
 
-    # Assume TN is computed based on total possible negatives
+    # Calculate TN based on total possible negatives
     TN = total_tests - (TP + FP + FN)
+    similarity_scores["TN"].extend([0] * TN)  # Assume TN have zero similarity
 
+    # Calculate accuracy
     accuracy = (TP + TN) / total_tests * 100 if total_tests > 0 else 0
     print(f"Benchmark Accuracy: {accuracy:.2f}% for {total_tests} tests")
 
     # Construct and visualize confusion matrix
     conf_matrix = [[TP, FP], [FN, TN]]
-    labels = ["Positive", "Negative"]
+    xlabels = ["Positive", "Negative"]
+    ylabels = ["True", "False"]
 
     plt.figure(figsize=(6, 5))
     sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", cbar=False,
-                xticklabels=labels, yticklabels=labels)
+                xticklabels=xlabels, yticklabels=ylabels)
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
     plt.title("Confusion Matrix")
@@ -154,6 +166,15 @@ def benchmark_model(test_folder, embeddings_data):
     # Save the confusion matrix as an image
     plt.savefig("confusion_matrix_binary.png", bbox_inches='tight')
     plt.close()
+
+    # Print average similarity scores
+    print("\nAverage Similarity Scores:")
+    for score_type, scores in similarity_scores.items():
+        if scores:  # Avoid division by zero
+            average_score = sum(scores) / len(scores)
+            print(f"{score_type}: {average_score:.2f}")
+        else:
+            print(f"{score_type}: No matches")
 
 
 def process_images_in_folder(folder_path, embeddings_data):
